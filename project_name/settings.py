@@ -1,20 +1,41 @@
 """Django settings module"""
 from os import environ, path
 
-DEBUG = TEMPLATE_DEBUG = environ.get('DJANGO_DEBUG', '0') == '1'
-PROJECT_ROOT = environ.get('DJANGO_HOME', '')
+DEBUG = TEMPLATE_DEBUG = environ.get('DJANGO_DEBUG', '1') == '1'
 
-ALLOWED_HOSTS = ['*']
+DJANGO_HOME = environ.get('DJANGO_HOME', '')
+
+SECRET_KEY = environ.get(
+    'DJANGO_SECRET',
+    '{{ secret_key }}'
+)
+
+
+ADMINS = (
+    ('admin', 'root@localhost')
+)
+
+ALLOWED_HOSTS = ['localhost']
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': path.join(PROJECT_ROOT, 'default.db'),
+        'NAME': path.join(DJANGO_HOME, 'default.db'),
+        'CONN_MAX_AGE': None,
     },
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = SERVER_EMAIL = 'webmaster@localhost'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' \
+    if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'localhost'
+#EMAIL_HOST_USER =
+#EMAIL_HOST_PASSWORD =
+#EMAIL_PORT = 587
 EMAIL_SUBJECT_PREFIX = '[{{ project_name }}] '
+#EMAIL_USE_TLS = True
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -62,7 +83,7 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.FileHandler',
             'formatter': 'debug' if DEBUG else 'default',
-            'filename': path.join(PROJECT_ROOT, '{{ project_name }}.log'),
+            'filename': path.join(DJANGO_HOME, '{{ project_name }}.log'),
         },
         'mail_admins': {
             'level': 'ERROR',
@@ -97,15 +118,13 @@ LOGGING = {
     },
 }
 
-MEDIA_ROOT = path.join(PROJECT_ROOT, 'media')
+MEDIA_ROOT = path.join(DJANGO_HOME, 'media')
 
 MEDIA_URL = '/media/'
 
 ROOT_URLCONF = '{{ project_name }}.main.urls'
 
-SECRET_KEY = '{{ secret_key }}'
-
-STATIC_ROOT = path.join(PROJECT_ROOT, 'static')
+STATIC_ROOT = path.join(DJANGO_HOME, 'static')
 
 STATIC_URL = '/static/'
 
