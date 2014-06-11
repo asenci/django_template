@@ -2,14 +2,12 @@
 from os import environ, path
 
 DEBUG = TEMPLATE_DEBUG = environ.get('DJANGO_DEBUG', '1') == '1'
-
 DJANGO_HOME = environ.get('DJANGO_HOME', '')
 
 SECRET_KEY = environ.get(
     'DJANGO_SECRET',
     '{{ secret_key }}'
 )
-
 
 ADMINS = (
     ('admin', 'root@localhost')
@@ -22,6 +20,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': path.join(DJANGO_HOME, 'default.db'),
         'CONN_MAX_AGE': None,
+        'OPTIONS': {
+            'timeout': 10,
+        },
     },
 }
 
@@ -135,3 +136,16 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+import json
+
+for f in ['/etc/{{ project_name }}.json',
+          path.expanduser('~/.{{ project_name }}.json'),
+          '{{ project_name }}.json']:
+
+    if path.exists(f):
+        with open(f) as fp:
+            cfg_dict = json.load(fp)
+
+            locals().update(cfg_dict)
