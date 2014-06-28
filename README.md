@@ -3,7 +3,6 @@
 ## Licensing:
 Licensed under ISC license:
 
-    :::text
     Copyright (c) 2014 Andre Sencioles Vitorio Oliveira <andre@bcp.net.br>
 
     Permission to use, copy, modify, and distribute this software for any
