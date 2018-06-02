@@ -1,42 +1,32 @@
 """Django settings module"""
-from os import environ, path
+import os
 
-DEBUG = TEMPLATE_DEBUG = environ.get('DJANGO_DEBUG', '1') == '1'
-DJANGO_HOME = environ.get('DJANGO_HOME', '')
 
-SECRET_KEY = environ.get(
-    'DJANGO_SECRET',
-    '{{ secret_key }}'
-)
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED', 'localhost,127.0.0.1,::1').split(',')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEBUG = TEMPLATE_DEBUG = os.environ.get('DJANGO_DEBUG', '1').lower() not in ('0', 'f', 'false')
+HOME_DIR = os.environ.get('DJANGO_HOME', 'run')
+SECRET_KEY = os.environ.get('DJANGO_SECRET', '{{ secret_key }}')
 
-ADMINS = (
-    ('admin', 'root@localhost')
-)
 
-ALLOWED_HOSTS = ['localhost']
+ROOT_URLCONF = 'project_name.urls'
+MEDIA_ROOT = os.path.join(HOME_DIR, 'media')
+MEDIA_URL = '/project_name/media/'
+STATIC_ROOT = os.path.join(HOME_DIR, 'static')
+STATIC_URL = '/project_name/static/'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': path.join(DJANGO_HOME, 'default.db'),
-        'CONN_MAX_AGE': None,
-        'OPTIONS': {
-            'timeout': 10,
-        },
-    },
-}
+USE_I18N = True
+USE_L10N = True
+LANGUAGE_CODE = 'en-us'
 
-DEFAULT_FROM_EMAIL = SERVER_EMAIL = 'webmaster@localhost'
+USE_TZ = True
+TIME_ZONE = 'UTC'
 
+
+ADMINS = [('admin', 'root')]
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' \
     if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'localhost'
-#EMAIL_HOST_USER =
-#EMAIL_HOST_PASSWORD =
-#EMAIL_PORT = 587
-EMAIL_SUBJECT_PREFIX = '[{{ project_name }}] '
-#EMAIL_USE_TLS = True
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -45,107 +35,40 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
-    '{{ project_name }}.main',
+    'project_name.main',
 )
 
-LANGUAGE_CODE = 'pt-br'
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s <%(name)s:%(levelname)s> %(message)s'
-        },
-        'debug': {
-            'format': '%(asctime)s <%(name)s:%(levelname)s>'
-                      ' [%(module)s:%(process)d:%(thread)d] %(message)s'
-        },
-    },
-
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
-        },
-        'default': {
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'class': 'logging.FileHandler',
-            'formatter': 'debug' if DEBUG else 'default',
-            'filename': path.join(DJANGO_HOME, '{{ project_name }}.log'),
-        },
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
         },
     },
+]
 
-    'loggers': {
-        '{{ project_name }}': {
-            'handlers': ['console', 'default'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-        },
-        'django': {
-            'handlers': ['console', 'default'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-        },
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-        'django.security': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-        'py.warnings': {
-            'handlers': ['console'],
-        },
-    },
-}
-
-MEDIA_ROOT = path.join(DJANGO_HOME, 'media')
-
-MEDIA_URL = '/media/'
-
-ROOT_URLCONF = '{{ project_name }}.main.urls'
-
-STATIC_ROOT = path.join(DJANGO_HOME, 'static')
-
-STATIC_URL = '/static/'
-
-TIME_ZONE = 'America/Sao_Paulo'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
+WSGI_APPLICATION = 'project_name.wsgi.application'
 
 
-import json
-
-for f in ['/etc/{{ project_name }}.json',
-          path.expanduser('~/.{{ project_name }}.json'),
-          '{{ project_name }}.json']:
-
-    if path.exists(f):
-        with open(f) as fp:
-            cfg_dict = json.load(fp)
-
-            locals().update(cfg_dict)
+# Load local settings
+try:
+    from project_name.localsettings import *
+except ImportError:
+    pass
